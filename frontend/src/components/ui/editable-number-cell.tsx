@@ -15,6 +15,10 @@ export function EditableNumberCell({ value, onChange, disabled }: Props) {
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!editing) setInput(String(value));
+  }, [value, editing]);
+
+  useEffect(() => {
     if (editing) ref.current?.select();
   }, [editing]);
 
@@ -31,7 +35,18 @@ export function EditableNumberCell({ value, onChange, disabled }: Props) {
         className="w-full text-right border rounded px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
         onChange={(e) => setInput(e.target.value)}
         onBlur={() => { onChange(parseInt(input, 10) || 0); setEditing(false); }}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Tab") { onChange(parseInt(input, 10) || 0); setEditing(false); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onChange(parseInt(input, 10) || 0);
+            setEditing(false);
+            e.preventDefault();
+          }
+          if (e.key === "Tab") {
+            onChange(parseInt(input, 10) || 0);
+            setEditing(false);
+            // Let Tab propagate for table-level focus management
+          }
+        }}
       />
     );
   }
