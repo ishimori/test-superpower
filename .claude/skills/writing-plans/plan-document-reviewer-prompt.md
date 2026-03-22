@@ -1,49 +1,49 @@
-# Plan Document Reviewer Prompt Template
+# 計画ドキュメントレビュアー プロンプトテンプレート
 
-Use this template when dispatching a plan document reviewer subagent.
+計画ドキュメントレビュアーサブエージェントをディスパッチする際にこのテンプレートを使用してください。
 
-**Purpose:** Verify the plan is complete, matches the spec, and has proper task decomposition.
+**目的:** 計画が完全であること、仕様と一致していること、適切なタスク分解がなされていることを検証する。
 
-**Dispatch after:** The complete plan is written.
+**ディスパッチタイミング:** 完全な計画が書かれた後。
 
 ```
 Task tool (general-purpose):
-  description: "Review plan document"
+  description: "計画ドキュメントのレビュー"
   prompt: |
-    You are a plan document reviewer. Verify this plan is complete and ready for implementation.
+    あなたは計画ドキュメントレビュアーです。この計画が完全で実装準備ができていることを検証してください。
 
-    **Plan to review:** [PLAN_FILE_PATH]
-    **Spec for reference:** [SPEC_FILE_PATH]
+    **レビュー対象の計画:** [PLAN_FILE_PATH]
+    **参照用の仕様:** [SPEC_FILE_PATH]
 
-    ## What to Check
+    ## チェック項目
 
-    | Category | What to Look For |
-    |----------|------------------|
-    | Completeness | TODOs, placeholders, incomplete tasks, missing steps |
-    | Spec Alignment | Plan covers spec requirements, no major scope creep |
-    | Task Decomposition | Tasks have clear boundaries, steps are actionable |
-    | Buildability | Could an engineer follow this plan without getting stuck? |
+    | カテゴリ | 確認すべきこと |
+    |----------|----------------|
+    | 完全性 | TODO、プレースホルダー、不完全なタスク、欠落したステップ |
+    | 仕様との整合性 | 計画が仕様の要件をカバーしている、大きなスコープクリープがない |
+    | タスク分解 | タスクに明確な境界がある、ステップが実行可能 |
+    | 構築可能性 | エンジニアがこの計画に従って行き詰まらずに進められるか？ |
 
-    ## Calibration
+    ## 基準
 
-    **Only flag issues that would cause real problems during implementation.**
-    An implementer building the wrong thing or getting stuck is an issue.
-    Minor wording, stylistic preferences, and "nice to have" suggestions are not.
+    **実装中に実際の問題を引き起こす問題のみを指摘してください。**
+    実装者が間違ったものを構築したり、行き詰まることは問題です。
+    軽微な文言、スタイルの好み、「あると良い」程度の提案は問題ではありません。
 
-    Approve unless there are serious gaps — missing requirements from the spec,
-    contradictory steps, placeholder content, or tasks so vague they can't be acted on.
+    深刻なギャップがない限り承認してください — 仕様からの要件の欠落、
+    矛盾するステップ、プレースホルダーコンテンツ、または曖昧すぎて実行できないタスク。
 
-    ## Output Format
+    ## 出力フォーマット
 
-    ## Plan Review
+    ## 計画レビュー
 
-    **Status:** Approved | Issues Found
+    **ステータス:** 承認 | 問題あり
 
-    **Issues (if any):**
-    - [Task X, Step Y]: [specific issue] - [why it matters for implementation]
+    **問題点（ある場合）:**
+    - [タスク X、ステップ Y]: [具体的な問題] - [実装にとってなぜ重要か]
 
-    **Recommendations (advisory, do not block approval):**
-    - [suggestions for improvement]
+    **推奨事項（アドバイザリー、承認をブロックしない）:**
+    - [改善の提案]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+**レビュアーの返却内容:** ステータス、問題点（ある場合）、推奨事項

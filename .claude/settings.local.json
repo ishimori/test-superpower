@@ -3,7 +3,18 @@
     "allow": [
       "Bash(mkdir -p c:/repo/test-superpower/.claude/skills)",
       "Bash(cp -r c:/repo/superpowers/skills/* c:/repo/test-superpower/.claude/skills/)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(grep -E \"^/c/repo/test-superpower/[^/]+$|README|CLAUDE\")",
+      "Bash(wc -l /c/repo/test-superpower/.claude/skills/*/*.md)",
+      "Bash(git -C /c/repo/test-superpower log --oneline)",
+      "Bash(git -C /c/repo/test-superpower status)",
+      "Bash(git -C /c/repo/test-superpower show --stat HEAD)",
+      "Edit(/.claude/skills/brainstorming/**)",
+      "Bash(bash scripts/start-server.sh --project-dir c:/repo/test-superpower)",
+      "Edit(/.claude/skills/writing-plans/**)",
+      "Edit(/.claude/skills/executing-plans/**)",
+      "Edit(/.claude/skills/writing-skills/**)",
+      "Bash(git -C c:/repo/test-superpower diff --stat HEAD)"
     ]
   }
 }

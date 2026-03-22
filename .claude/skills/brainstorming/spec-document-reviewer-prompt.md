@@ -1,49 +1,49 @@
-# Spec Document Reviewer Prompt Template
+# 仕様ドキュメントレビュアー プロンプトテンプレート
 
-Use this template when dispatching a spec document reviewer subagent.
+spec-document-reviewerサブエージェントをディスパッチする際にこのテンプレートを使用します。
 
-**Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
+**目的：** 仕様が完全で、一貫性があり、実装計画の準備ができていることを検証する。
 
-**Dispatch after:** Spec document is written to docs/superpowers/specs/
+**ディスパッチのタイミング：** 仕様ドキュメントがdocs/superpowers/specs/に書き込まれた後
 
 ```
 Task tool (general-purpose):
-  description: "Review spec document"
+  description: "仕様ドキュメントをレビュー"
   prompt: |
-    You are a spec document reviewer. Verify this spec is complete and ready for planning.
+    あなたは仕様ドキュメントレビュアーです。この仕様が完全で、計画の準備ができていることを検証してください。
 
-    **Spec to review:** [SPEC_FILE_PATH]
+    **レビュー対象の仕様：** [SPEC_FILE_PATH]
 
-    ## What to Check
+    ## チェック項目
 
-    | Category | What to Look For |
-    |----------|------------------|
-    | Completeness | TODOs, placeholders, "TBD", incomplete sections |
-    | Consistency | Internal contradictions, conflicting requirements |
-    | Clarity | Requirements ambiguous enough to cause someone to build the wrong thing |
-    | Scope | Focused enough for a single plan — not covering multiple independent subsystems |
-    | YAGNI | Unrequested features, over-engineering |
+    | カテゴリ | 確認すべきこと |
+    |----------|----------------|
+    | 完全性 | TODO、プレースホルダー、「TBD」、未完成のセクション |
+    | 一貫性 | 内部矛盾、競合する要件 |
+    | 明確さ | 誤ったものを構築してしまうほど曖昧な要件 |
+    | スコープ | 単一の計画に十分に絞られているか — 複数の独立したサブシステムをカバーしていないか |
+    | YAGNI | 要求されていない機能、過剰なエンジニアリング |
 
-    ## Calibration
+    ## 判断基準
 
-    **Only flag issues that would cause real problems during implementation planning.**
-    A missing section, a contradiction, or a requirement so ambiguous it could be
-    interpreted two different ways — those are issues. Minor wording improvements,
-    stylistic preferences, and "sections less detailed than others" are not.
+    **実装計画中に実際の問題を引き起こす問題のみを指摘してください。**
+    欠落したセクション、矛盾、または2通りに解釈できるほど曖昧な要件 —
+    これらは問題です。軽微な文言の改善、スタイルの好み、
+    「他のセクションより詳細が少ない」は問題ではありません。
 
-    Approve unless there are serious gaps that would lead to a flawed plan.
+    欠陥のある計画につながる重大なギャップがない限り、承認してください。
 
-    ## Output Format
+    ## 出力形式
 
-    ## Spec Review
+    ## 仕様レビュー
 
-    **Status:** Approved | Issues Found
+    **ステータス：** 承認 | 問題あり
 
-    **Issues (if any):**
-    - [Section X]: [specific issue] - [why it matters for planning]
+    **問題（ある場合）：**
+    - [セクションX]：[具体的な問題] - [計画にとって重要な理由]
 
-    **Recommendations (advisory, do not block approval):**
-    - [suggestions for improvement]
+    **推奨事項（助言のみ、承認をブロックしない）：**
+    - [改善の提案]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+**レビュアーの返答：** ステータス、問題（ある場合）、推奨事項

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Stop the brainstorm server and clean up
-# Usage: stop-server.sh <screen_dir>
+# ブレインストーミングサーバーを停止してクリーンアップする
+# 使用方法: stop-server.sh <screen_dir>
 #
-# Kills the server process. Only deletes session directory if it's
-# under /tmp (ephemeral). Persistent directories (.superpowers/) are
-# kept so mockups can be reviewed later.
+# サーバープロセスを停止する。/tmp配下のセッションディレクトリ
+# （一時的なもの）のみ削除する。永続ディレクトリ（.superpowers/）は
+# モックアップを後で確認できるよう保持する。
 
 SCREEN_DIR="$1"
 
 if [[ -z "$SCREEN_DIR" ]]; then
-  echo '{"error": "Usage: stop-server.sh <screen_dir>"}'
+  echo '{"error": "使用方法: stop-server.sh <screen_dir>"}'
   exit 1
 fi
 
@@ -18,10 +18,10 @@ PID_FILE="${SCREEN_DIR}/.server.pid"
 if [[ -f "$PID_FILE" ]]; then
   pid=$(cat "$PID_FILE")
 
-  # Try to stop gracefully, fallback to force if still alive
+  # グレースフルに停止を試み、まだ生きていれば強制終了にフォールバック
   kill "$pid" 2>/dev/null || true
 
-  # Wait for graceful shutdown (up to ~2s)
+  # グレースフルシャットダウンを待つ（最大約2秒）
   for i in {1..20}; do
     if ! kill -0 "$pid" 2>/dev/null; then
       break
@@ -29,22 +29,22 @@ if [[ -f "$PID_FILE" ]]; then
     sleep 0.1
   done
 
-  # If still running, escalate to SIGKILL
+  # まだ実行中ならSIGKILLにエスカレート
   if kill -0 "$pid" 2>/dev/null; then
     kill -9 "$pid" 2>/dev/null || true
 
-    # Give SIGKILL a moment to take effect
+    # SIGKILLが効くまで少し待つ
     sleep 0.1
   fi
 
   if kill -0 "$pid" 2>/dev/null; then
-    echo '{"status": "failed", "error": "process still running"}'
+    echo '{"status": "failed", "error": "プロセスがまだ実行中です"}'
     exit 1
   fi
 
   rm -f "$PID_FILE" "${SCREEN_DIR}/.server.log"
 
-  # Only delete ephemeral /tmp directories
+  # 一時的な/tmpディレクトリのみ削除
   if [[ "$SCREEN_DIR" == /tmp/* ]]; then
     rm -rf "$SCREEN_DIR"
   fi

@@ -1,76 +1,76 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: 仕様や要件がある複数ステップのタスクに対して、コードに触れる前に使用する
 ---
 
-# Writing Plans
+# 計画の作成
 
-## Overview
+## 概要
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+コードベースのコンテキストがゼロで、設計センスが怪しいエンジニアを想定して、包括的な実装計画を作成する。各タスクでどのファイルに触れるか、コード、テスト、確認すべきドキュメント、テスト方法など、必要なことをすべて文書化する。計画全体を一口サイズのタスクとして提供する。DRY。YAGNI。TDD。頻繁なコミット。
 
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+彼らは熟練した開発者だが、ツールセットや問題領域についてはほとんど知らないと仮定する。良いテスト設計についてあまり詳しくないと仮定する。
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+**開始時のアナウンス:** 「writing-plansスキルを使用して実装計画を作成します。」
 
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+**コンテキスト:** これは専用のワークツリー（brainstormingスキルで作成）で実行すべきです。
 
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
-- (User preferences for plan location override this default)
+**計画の保存先:** `docs/superpowers/plans/YYYY-MM-DD-<機能名>.md`
+- （ユーザーの計画保存場所の設定がこのデフォルトを上書きします）
 
-## Scope Check
+## スコープチェック
 
-If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+仕様が複数の独立したサブシステムをカバーしている場合、brainstorming中にサブプロジェクト仕様に分割されているべきです。分割されていない場合は、サブシステムごとに個別の計画に分けることを提案してください。各計画はそれ単体で動作する、テスト可能なソフトウェアを生成するべきです。
 
-## File Structure
+## ファイル構成
 
-Before defining tasks, map out which files will be created or modified and what each one is responsible for. This is where decomposition decisions get locked in.
+タスクを定義する前に、どのファイルが作成または変更され、各ファイルが何を担当するかをマッピングします。ここで分解の決定が確定します。
 
-- Design units with clear boundaries and well-defined interfaces. Each file should have one clear responsibility.
-- You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
-- Files that change together should live together. Split by responsibility, not by technical layer.
-- In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
+- 明確な境界と明確に定義されたインターフェースを持つユニットを設計する。各ファイルは1つの明確な責務を持つべき。
+- コンテキスト内に収まるコードについて最も良い推論ができ、ファイルが焦点を絞っている場合に編集の信頼性が高くなる。多くのことをする大きなファイルよりも、小さく焦点を絞ったファイルを優先する。
+- 一緒に変更されるファイルは一緒に配置すべき。技術レイヤーではなく、責務で分割する。
+- 既存のコードベースでは、確立されたパターンに従う。コードベースが大きなファイルを使用している場合、一方的に再構築しない — ただし、変更中のファイルが扱いにくくなっている場合、計画に分割を含めることは妥当。
 
-This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
+この構造がタスク分解に情報を提供します。各タスクは独立して意味をなす自己完結型の変更を生成するべきです。
 
-## Bite-Sized Task Granularity
+## 一口サイズのタスク粒度
 
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
+**各ステップは1つのアクション（2〜5分）：**
+- 「失敗するテストを書く」 - ステップ
+- 「実行して失敗することを確認する」 - ステップ
+- 「テストを通過する最小限のコードを実装する」 - ステップ
+- 「テストを実行して通過することを確認する」 - ステップ
+- 「コミット」 - ステップ
 
-## Plan Document Header
+## 計画ドキュメントヘッダー
 
-**Every plan MUST start with this header:**
+**すべての計画はこのヘッダーで始める必要があります：**
 
 ```markdown
-# [Feature Name] Implementation Plan
+# [機能名] 実装計画
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **エージェントワーカー向け：** 必須サブスキル: superpowers:subagent-driven-development（推奨）またはsuperpowers:executing-plansを使用して、この計画をタスクごとに実装してください。ステップは進捗追跡のためにチェックボックス（`- [ ]`）構文を使用します。
 
-**Goal:** [One sentence describing what this builds]
+**目標:** [これが何を構築するかを1文で説明]
 
-**Architecture:** [2-3 sentences about approach]
+**アーキテクチャ:** [アプローチについて2〜3文]
 
-**Tech Stack:** [Key technologies/libraries]
+**技術スタック:** [主要な技術/ライブラリ]
 
 ---
 ```
 
-## Task Structure
+## タスク構造
 
 ````markdown
-### Task N: [Component Name]
+### タスク N: [コンポーネント名]
 
-**Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
+**ファイル:**
+- 作成: `exact/path/to/file.py`
+- 変更: `exact/path/to/existing.py:123-145`
+- テスト: `tests/exact/path/to/test.py`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **ステップ 1: 失敗するテストを書く**
 
 ```python
 def test_specific_behavior():
@@ -78,24 +78,24 @@ def test_specific_behavior():
     assert result == expected
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **ステップ 2: テストを実行して失敗を確認する**
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
+実行: `pytest tests/path/test.py::test_name -v`
+期待結果: FAIL「function not defined」
 
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **ステップ 3: 最小限の実装を書く**
 
 ```python
 def function(input):
     return expected
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **ステップ 4: テストを実行して通過を確認する**
 
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
+実行: `pytest tests/path/test.py::test_name -v`
+期待結果: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **ステップ 5: コミット**
 
 ```bash
 git add tests/path/test.py src/path/file.py
@@ -103,43 +103,43 @@ git commit -m "feat: add specific feature"
 ```
 ````
 
-## Remember
-- Exact file paths always
-- Complete code in plan (not "add validation")
-- Exact commands with expected output
-- Reference relevant skills with @ syntax
-- DRY, YAGNI, TDD, frequent commits
+## 注意事項
+- 常に正確なファイルパスを指定
+- 計画に完全なコードを記載（「バリデーションを追加」ではなく）
+- 期待される出力を含む正確なコマンド
+- @構文で関連スキルを参照
+- DRY、YAGNI、TDD、頻繁なコミット
 
-## Plan Review Loop
+## 計画レビューループ
 
-After writing the complete plan:
+完全な計画を書いた後：
 
-1. Dispatch a single plan-document-reviewer subagent (see plan-document-reviewer-prompt.md) with precisely crafted review context — never your session history. This keeps the reviewer focused on the plan, not your thought process.
-   - Provide: path to the plan document, path to spec document
-2. If ❌ Issues Found: fix the issues, re-dispatch reviewer for the whole plan
-3. If ✅ Approved: proceed to execution handoff
+1. 単一のplan-document-reviewerサブエージェントをディスパッチ（plan-document-reviewer-prompt.mdを参照）し、正確に作成されたレビューコンテキストを提供する — セッション履歴は決して渡さない。これによりレビュアーは思考プロセスではなく計画に集中できます。
+   - 提供するもの: 計画ドキュメントへのパス、仕様ドキュメントへのパス
+2. ❌ 問題が見つかった場合: 問題を修正し、計画全体についてレビュアーを再ディスパッチ
+3. ✅ 承認された場合: 実行ハンドオフに進む
 
-**Review loop guidance:**
-- Same agent that wrote the plan fixes it (preserves context)
-- If loop exceeds 3 iterations, surface to human for guidance
-- Reviewers are advisory — explain disagreements if you believe feedback is incorrect
+**レビューループのガイダンス:**
+- 計画を書いたのと同じエージェントが修正する（コンテキストを保持）
+- ループが3回を超えた場合、人間にガイダンスを求める
+- レビュアーはアドバイザリー — フィードバックが不正確だと考える場合は反論を説明する
 
-## Execution Handoff
+## 実行ハンドオフ
 
-After saving the plan, offer execution choice:
+計画を保存した後、実行方法の選択肢を提示する：
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+**「計画が完成し、`docs/superpowers/plans/<ファイル名>.md`に保存されました。2つの実行オプション：**
 
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
+**1. サブエージェント駆動（推奨）** - タスクごとに新しいサブエージェントをディスパッチ、タスク間でレビュー、高速イテレーション
 
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
+**2. インライン実行** - executing-plansを使用してこのセッションでタスクを実行、チェックポイント付きバッチ実行
 
-**Which approach?"**
+**どちらのアプローチにしますか？」**
 
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Fresh subagent per task + two-stage review
+**サブエージェント駆動を選択した場合：**
+- **必須サブスキル:** superpowers:subagent-driven-developmentを使用
+- タスクごとに新しいサブエージェント + 二段階レビュー
 
-**If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Batch execution with checkpoints for review
+**インライン実行を選択した場合：**
+- **必須サブスキル:** superpowers:executing-plansを使用
+- レビュー用チェックポイント付きバッチ実行

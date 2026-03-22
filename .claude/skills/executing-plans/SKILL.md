@@ -1,70 +1,70 @@
 ---
 name: executing-plans
-description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+description: 別セッションでレビューチェックポイント付きの実装計画を実行する場合に使用する
 ---
 
-# Executing Plans
+# 計画の実行
 
-## Overview
+## 概要
 
-Load plan, review critically, execute all tasks, report when complete.
+計画を読み込み、批判的にレビューし、すべてのタスクを実行し、完了時に報告する。
 
-**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+**開始時にアナウンス：** 「executing-plansスキルを使用してこの計画を実装します。」
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (such as Claude Code or Codex). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+**注意：** サブエージェントへのアクセスがあると、Superpowersはより良く動作することをパートナーに伝えること。サブエージェントをサポートするプラットフォーム（Claude CodeやCodexなど）で実行すると、作業の品質が大幅に向上する。サブエージェントが利用可能な場合は、このスキルの代わりにsuperpowers:subagent-driven-developmentを使用すること。
 
-## The Process
+## プロセス
 
-### Step 1: Load and Review Plan
-1. Read plan file
-2. Review critically - identify any questions or concerns about the plan
-3. If concerns: Raise them with your human partner before starting
-4. If no concerns: Create TodoWrite and proceed
+### ステップ1：計画の読み込みとレビュー
+1. 計画ファイルを読む
+2. 批判的にレビューする — 計画に対する質問や懸念点を特定する
+3. 懸念がある場合：開始前にパートナーに相談する
+4. 懸念がない場合：TodoWriteを作成して進める
 
-### Step 2: Execute Tasks
+### ステップ2：タスクの実行
 
-For each task:
-1. Mark as in_progress
-2. Follow each step exactly (plan has bite-sized steps)
-3. Run verifications as specified
-4. Mark as completed
+各タスクについて：
+1. in_progressとしてマーク
+2. 各ステップを正確に実行する（計画には細かいステップがある）
+3. 指定された検証を実行する
+4. completedとしてマーク
 
-### Step 3: Complete Development
+### ステップ3：開発の完了
 
-After all tasks complete and verified:
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+すべてのタスクが完了し検証された後：
+- アナウンス：「finishing-a-development-branchスキルを使用してこの作業を完了します。」
+- **必須サブスキル：** superpowers:finishing-a-development-branchを使用する
+- そのスキルに従い、テストの検証、オプションの提示、選択の実行を行う
 
-## When to Stop and Ask for Help
+## 止まって助けを求めるべき時
 
-**STOP executing immediately when:**
-- Hit a blocker (missing dependency, test fails, instruction unclear)
-- Plan has critical gaps preventing starting
-- You don't understand an instruction
-- Verification fails repeatedly
+**以下の場合は直ちに実行を停止する：**
+- ブロッカーに当たった（依存関係の不足、テスト失敗、指示が不明確）
+- 計画に開始を妨げる重大なギャップがある
+- 指示が理解できない
+- 検証が繰り返し失敗する
 
-**Ask for clarification rather than guessing.**
+**推測せず、明確化を求めること。**
 
-## When to Revisit Earlier Steps
+## 前のステップに戻るべき時
 
-**Return to Review (Step 1) when:**
-- Partner updates the plan based on your feedback
-- Fundamental approach needs rethinking
+**レビュー（ステップ1）に戻る場合：**
+- フィードバックに基づいてパートナーが計画を更新した
+- 根本的なアプローチの再考が必要
 
-**Don't force through blockers** - stop and ask.
+**ブロッカーを無理に突破しない** — 止まって相談すること。
 
-## Remember
-- Review plan critically first
-- Follow plan steps exactly
-- Don't skip verifications
-- Reference skills when plan says to
-- Stop when blocked, don't guess
-- Never start implementation on main/master branch without explicit user consent
+## 心得
+- まず計画を批判的にレビューする
+- 計画のステップを正確に実行する
+- 検証をスキップしない
+- 計画がスキルを参照している場合はそのスキルを使用する
+- ブロックされたら止まる、推測しない
+- ユーザーの明示的な同意なしにmain/masterブランチで実装を開始しない
 
-## Integration
+## 連携
 
-**Required workflow skills:**
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-- **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+**必須ワークフロースキル：**
+- **superpowers:using-git-worktrees** - 必須：開始前に隔離されたワークスペースをセットアップする
+- **superpowers:writing-plans** - このスキルが実行する計画を作成する
+- **superpowers:finishing-a-development-branch** - すべてのタスク後に開発を完了する

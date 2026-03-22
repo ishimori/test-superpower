@@ -3,7 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-// ========== WebSocket Protocol (RFC 6455) ==========
+// ========== WebSocketプロトコル (RFC 6455) ==========
 
 const OPCODES = { TEXT: 0x01, CLOSE: 0x08, PING: 0x09, PONG: 0x0A };
 const WS_MAGIC = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
@@ -45,7 +45,7 @@ function decodeFrame(buffer) {
   let payloadLen = secondByte & 0x7F;
   let offset = 2;
 
-  if (!masked) throw new Error('Client frames must be masked');
+  if (!masked) throw new Error('クライアントフレームはマスクされている必要があります');
 
   if (payloadLen === 126) {
     if (buffer.length < 4) return null;
@@ -71,7 +71,7 @@ function decodeFrame(buffer) {
   return { opcode, payload: data, bytesConsumed: totalLen };
 }
 
-// ========== Configuration ==========
+// ========== 設定 ==========
 
 const PORT = process.env.BRAINSTORM_PORT || (49152 + Math.floor(Math.random() * 16383));
 const HOST = process.env.BRAINSTORM_HOST || '127.0.0.1';
@@ -85,22 +85,22 @@ const MIME_TYPES = {
   '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.svg': 'image/svg+xml'
 };
 
-// ========== Templates and Constants ==========
+// ========== テンプレートと定数 ==========
 
 const WAITING_PAGE = `<!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><title>Brainstorm Companion</title>
+<head><meta charset="utf-8"><title>ブレインストーミングコンパニオン</title>
 <style>body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
 h1 { color: #333; } p { color: #666; }</style>
 </head>
-<body><h1>Brainstorm Companion</h1>
-<p>Waiting for the agent to push a screen...</p></body></html>`;
+<body><h1>ブレインストーミングコンパニオン</h1>
+<p>エージェントがスクリーンをプッシュするのを待っています...</p></body></html>`;
 
 const frameTemplate = fs.readFileSync(path.join(__dirname, 'frame-template.html'), 'utf-8');
 const helperScript = fs.readFileSync(path.join(__dirname, 'helper.js'), 'utf-8');
 const helperInjection = '<script>\n' + helperScript + '\n</script>';
 
-// ========== Helper Functions ==========
+// ========== ヘルパー関数 ==========
 
 function isFullDocument(html) {
   const trimmed = html.trimStart().toLowerCase();
@@ -122,7 +122,7 @@ function getNewestScreen() {
   return files.length > 0 ? files[0].path : null;
 }
 
-// ========== HTTP Request Handler ==========
+// ========== HTTPリクエストハンドラー ==========
 
 function handleRequest(req, res) {
   touchActivity();
@@ -145,7 +145,7 @@ function handleRequest(req, res) {
     const filePath = path.join(SCREEN_DIR, path.basename(fileName));
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);
-      res.end('Not found');
+      res.end('見つかりません');
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
@@ -154,11 +154,11 @@ function handleRequest(req, res) {
     res.end(fs.readFileSync(filePath));
   } else {
     res.writeHead(404);
-    res.end('Not found');
+    res.end('見つかりません');
   }
 }
 
-// ========== WebSocket Connection Handling ==========
+// ========== WebSocket接続ハンドリング ==========
 
 const clients = new Set();
 
@@ -224,7 +224,7 @@ function handleMessage(text) {
   try {
     event = JSON.parse(text);
   } catch (e) {
-    console.error('Failed to parse WebSocket message:', e.message);
+    console.error('WebSocketメッセージのパースに失敗:', e.message);
     return;
   }
   touchActivity();
@@ -242,27 +242,27 @@ function broadcast(msg) {
   }
 }
 
-// ========== Activity Tracking ==========
+// ========== アクティビティ追跡 ==========
 
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30分
 let lastActivity = Date.now();
 
 function touchActivity() {
   lastActivity = Date.now();
 }
 
-// ========== File Watching ==========
+// ========== ファイル監視 ==========
 
 const debounceTimers = new Map();
 
-// ========== Server Startup ==========
+// ========== サーバー起動 ==========
 
 function startServer() {
   if (!fs.existsSync(SCREEN_DIR)) fs.mkdirSync(SCREEN_DIR, { recursive: true });
 
-  // Track known files to distinguish new screens from updates.
-  // macOS fs.watch reports 'rename' for both new files and overwrites,
-  // so we can't rely on eventType alone.
+  // 既知のファイルを追跡して、新しいスクリーンと更新を区別する。
+  // macOSのfs.watchはファイルの新規作成と上書きの両方で'rename'を報告するため、
+  // eventTypeだけに頼ることはできない。
   const knownFiles = new Set(
     fs.readdirSync(SCREEN_DIR).filter(f => f.endsWith('.html'))
   );
@@ -278,7 +278,7 @@ function startServer() {
       debounceTimers.delete(filename);
       const filePath = path.join(SCREEN_DIR, filename);
 
-      if (!fs.existsSync(filePath)) return; // file was deleted
+      if (!fs.existsSync(filePath)) return; // ファイルが削除された
       touchActivity();
 
       if (!knownFiles.has(filename)) {
@@ -293,7 +293,7 @@ function startServer() {
       broadcast({ type: 'reload' });
     }, 100));
   });
-  watcher.on('error', (err) => console.error('fs.watch error:', err.message));
+  watcher.on('error', (err) => console.error('fs.watchエラー:', err.message));
 
   function shutdown(reason) {
     console.log(JSON.stringify({ type: 'server-stopped', reason }));
@@ -313,10 +313,10 @@ function startServer() {
     try { process.kill(OWNER_PID, 0); return true; } catch (e) { return false; }
   }
 
-  // Check every 60s: exit if owner process died or idle for 30 minutes
+  // 60秒ごとにチェック：オーナープロセスが終了したか、30分間アイドルかを確認
   const lifecycleCheck = setInterval(() => {
-    if (!ownerAlive()) shutdown('owner process exited');
-    else if (Date.now() - lastActivity > IDLE_TIMEOUT_MS) shutdown('idle timeout');
+    if (!ownerAlive()) shutdown('オーナープロセスが終了');
+    else if (Date.now() - lastActivity > IDLE_TIMEOUT_MS) shutdown('アイドルタイムアウト');
   }, 60 * 1000);
   lifecycleCheck.unref();
 

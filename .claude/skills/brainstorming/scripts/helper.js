@@ -32,7 +32,7 @@
     }
   }
 
-  // Capture clicks on choice elements
+  // 選択要素のクリックをキャプチャ
   document.addEventListener('click', (e) => {
     const target = e.target.closest('[data-choice]');
     if (!target) return;
@@ -44,24 +44,24 @@
       id: target.id || null
     });
 
-    // Update indicator bar (defer so toggleSelect runs first)
+    // インジケーターバーを更新（toggleSelectが先に実行されるよう遅延）
     setTimeout(() => {
       const indicator = document.getElementById('indicator-text');
       if (!indicator) return;
       const container = target.closest('.options') || target.closest('.cards');
       const selected = container ? container.querySelectorAll('.selected') : [];
       if (selected.length === 0) {
-        indicator.textContent = 'Click an option above, then return to the terminal';
+        indicator.textContent = '上のオプションをクリックしてから、ターミナルに戻ってください';
       } else if (selected.length === 1) {
         const label = selected[0].querySelector('h3, .content h3, .card-body h3')?.textContent?.trim() || selected[0].dataset.choice;
-        indicator.innerHTML = '<span class="selected-text">' + label + ' selected</span> — return to terminal to continue';
+        indicator.innerHTML = '<span class="selected-text">' + label + ' を選択済み</span> — ターミナルに戻って続行してください';
       } else {
-        indicator.innerHTML = '<span class="selected-text">' + selected.length + ' selected</span> — return to terminal to continue';
+        indicator.innerHTML = '<span class="selected-text">' + selected.length + ' 件選択済み</span> — ターミナルに戻って続行してください';
       }
     }, 0);
   });
 
-  // Frame UI: selection tracking
+  // フレームUI：選択の追跡
   window.selectedChoice = null;
 
   window.toggleSelect = function(el) {
@@ -78,7 +78,7 @@
     window.selectedChoice = el.dataset.choice;
   };
 
-  // Expose API for explicit use
+  // 明示的な使用のためのAPIを公開
   window.brainstorm = {
     send: sendEvent,
     choice: (value, metadata = {}) => sendEvent({ type: 'choice', value, ...metadata })
