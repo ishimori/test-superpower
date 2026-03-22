@@ -3,9 +3,9 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: kintai
-      POSTGRES_PASSWORD: kintai
-      POSTGRES_DB: kintai_dev
+      POSTGRES_USER: ${POSTGRES_USER:-kintai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kintai}
+      POSTGRES_DB: ${POSTGRES_DB:-kintai_dev}
     ports:
       - "5432:5432"
     volumes:
@@ -14,9 +14,9 @@ services:
   db_test:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: kintai
-      POSTGRES_PASSWORD: kintai
-      POSTGRES_DB: kintai_test
+      POSTGRES_USER: ${POSTGRES_USER:-kintai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kintai}
+      POSTGRES_DB: ${POSTGRES_DB_TEST:-kintai_test}
     ports:
       - "5433:5432"
 
