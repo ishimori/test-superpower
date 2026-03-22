@@ -1,122 +1,122 @@
-# Defense-in-Depth Validation
+# 多層防御バリデーション
 
-## Overview
+## 概要
 
-When you fix a bug caused by invalid data, adding validation at one place feels sufficient. But that single check can be bypassed by different code paths, refactoring, or mocks.
+無効なデータによって引き起こされたバグを修正する際、1か所にバリデーションを追加するだけで十分に思えます。しかし、その単一のチェックは異なるコードパス、リファクタリング、またはモックによってバイパスされる可能性があります。
 
-**Core principle:** Validate at EVERY layer data passes through. Make the bug structurally impossible.
+**基本原則:** データが通過する全てのレイヤーでバリデーションを行う。バグを構造的に不可能にする。
 
-## Why Multiple Layers
+## 複数レイヤーの理由
 
-Single validation: "We fixed the bug"
-Multiple layers: "We made the bug impossible"
+単一のバリデーション: 「バグを修正した」
+複数のレイヤー: 「バグを不可能にした」
 
-Different layers catch different cases:
-- Entry validation catches most bugs
-- Business logic catches edge cases
-- Environment guards prevent context-specific dangers
-- Debug logging helps when other layers fail
+異なるレイヤーが異なるケースをキャッチする:
+- エントリーバリデーションはほとんどのバグをキャッチする
+- ビジネスロジックはエッジケースをキャッチする
+- 環境ガードはコンテキスト固有の危険を防ぐ
+- デバッグログは他のレイヤーが失敗した時に助ける
 
-## The Four Layers
+## 4つのレイヤー
 
-### Layer 1: Entry Point Validation
-**Purpose:** Reject obviously invalid input at API boundary
+### レイヤー1: エントリーポイントバリデーション
+**目的:** API境界で明らかに無効な入力を拒否する
 
 ```typescript
 function createProject(name: string, workingDirectory: string) {
   if (!workingDirectory || workingDirectory.trim() === '') {
-    throw new Error('workingDirectory cannot be empty');
+    throw new Error('workingDirectory は空にできません');
   }
   if (!existsSync(workingDirectory)) {
-    throw new Error(`workingDirectory does not exist: ${workingDirectory}`);
+    throw new Error(`workingDirectory が存在しません: ${workingDirectory}`);
   }
   if (!statSync(workingDirectory).isDirectory()) {
-    throw new Error(`workingDirectory is not a directory: ${workingDirectory}`);
+    throw new Error(`workingDirectory はディレクトリではありません: ${workingDirectory}`);
   }
-  // ... proceed
+  // ... 続行
 }
 ```
 
-### Layer 2: Business Logic Validation
-**Purpose:** Ensure data makes sense for this operation
+### レイヤー2: ビジネスロジックバリデーション
+**目的:** データがこの操作に対して意味をなすことを確認する
 
 ```typescript
 function initializeWorkspace(projectDir: string, sessionId: string) {
   if (!projectDir) {
-    throw new Error('projectDir required for workspace initialization');
+    throw new Error('ワークスペースの初期化にはprojectDirが必要です');
   }
-  // ... proceed
+  // ... 続行
 }
 ```
 
-### Layer 3: Environment Guards
-**Purpose:** Prevent dangerous operations in specific contexts
+### レイヤー3: 環境ガード
+**目的:** 特定のコンテキストで危険な操作を防ぐ
 
 ```typescript
 async function gitInit(directory: string) {
-  // In tests, refuse git init outside temp directories
+  // テストでは、一時ディレクトリ外でのgit initを拒否する
   if (process.env.NODE_ENV === 'test') {
     const normalized = normalize(resolve(directory));
     const tmpDir = normalize(resolve(tmpdir()));
 
     if (!normalized.startsWith(tmpDir)) {
       throw new Error(
-        `Refusing git init outside temp dir during tests: ${directory}`
+        `テスト中に一時ディレクトリ外でのgit initを拒否: ${directory}`
       );
     }
   }
-  // ... proceed
+  // ... 続行
 }
 ```
 
-### Layer 4: Debug Instrumentation
-**Purpose:** Capture context for forensics
+### レイヤー4: デバッグインストゥルメンテーション
+**目的:** フォレンジックのためのコンテキストをキャプチャする
 
 ```typescript
 async function gitInit(directory: string) {
   const stack = new Error().stack;
-  logger.debug('About to git init', {
+  logger.debug('git initを実行しようとしています', {
     directory,
     cwd: process.cwd(),
     stack,
   });
-  // ... proceed
+  // ... 続行
 }
 ```
 
-## Applying the Pattern
+## パターンの適用
 
-When you find a bug:
+バグを見つけた時:
 
-1. **Trace the data flow** - Where does bad value originate? Where used?
-2. **Map all checkpoints** - List every point data passes through
-3. **Add validation at each layer** - Entry, business, environment, debug
-4. **Test each layer** - Try to bypass layer 1, verify layer 2 catches it
+1. **データフローをトレースする** — 不正な値はどこで発生するか？どこで使用されるか？
+2. **全てのチェックポイントをマップする** — データが通過する全ての点をリストアップする
+3. **各レイヤーにバリデーションを追加する** — エントリー、ビジネス、環境、デバッグ
+4. **各レイヤーをテストする** — レイヤー1をバイパスしてみる、レイヤー2がキャッチすることを確認する
 
-## Example from Session
+## セッションからの例
 
-Bug: Empty `projectDir` caused `git init` in source code
+バグ: 空の `projectDir` がソースコードで `git init` を引き起こした
 
-**Data flow:**
-1. Test setup → empty string
+**データフロー:**
+1. テストセットアップ → 空文字列
 2. `Project.create(name, '')`
 3. `WorkspaceManager.createWorkspace('')`
-4. `git init` runs in `process.cwd()`
+4. `git init` が `process.cwd()` で実行される
 
-**Four layers added:**
-- Layer 1: `Project.create()` validates not empty/exists/writable
-- Layer 2: `WorkspaceManager` validates projectDir not empty
-- Layer 3: `WorktreeManager` refuses git init outside tmpdir in tests
-- Layer 4: Stack trace logging before git init
+**追加された4つのレイヤー:**
+- レイヤー1: `Project.create()` が空でない/存在する/書き込み可能を検証
+- レイヤー2: `WorkspaceManager` が projectDir が空でないことを検証
+- レイヤー3: `WorktreeManager` がテスト中に tmpdir 外での git init を拒否
+- レイヤー4: git init 前にスタックトレースログ
 
-**Result:** All 1847 tests passed, bug impossible to reproduce
+**結果:** 全1847テストが通過し、バグを再現不能にした
 
-## Key Insight
+## 重要な洞察
 
-All four layers were necessary. During testing, each layer caught bugs the others missed:
-- Different code paths bypassed entry validation
-- Mocks bypassed business logic checks
-- Edge cases on different platforms needed environment guards
-- Debug logging identified structural misuse
+全4つのレイヤーが必要でした。テスト中に各レイヤーが他のレイヤーが見逃したバグをキャッチしました:
+- 異なるコードパスがエントリーバリデーションをバイパスした
+- モックがビジネスロジックのチェックをバイパスした
+- 異なるプラットフォームのエッジケースに環境ガードが必要だった
+- デバッグログが構造的な誤用を特定した
 
-**Don't stop at one validation point.** Add checks at every layer.
+**1か所のバリデーションで止まらないでください。** 全てのレイヤーでチェックを追加してください。

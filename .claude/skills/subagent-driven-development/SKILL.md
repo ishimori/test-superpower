@@ -1,277 +1,277 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session
+description: 現在のセッションで独立したタスクを含む実装計画を実行する場合に使用する
 ---
 
-# Subagent-Driven Development
+# サブエージェント駆動開発
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+タスクごとに新鮮なサブエージェントをディスパッチし、各タスク後に2段階レビュー（仕様準拠レビュー、次にコード品質レビュー）を実行して計画を実行します。
 
-**Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+**サブエージェントを使う理由:** 隔離されたコンテキストを持つ専門エージェントにタスクを委任します。指示とコンテキストを正確に作成することで、エージェントが集中して成功できるようにします。エージェントがセッションのコンテキストや履歴を引き継がないようにし、必要なものだけを構築して渡します。これにより、自分自身のコンテキストも調整作業のために保たれます。
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**基本原則:** タスクごとに新鮮なサブエージェント + 2段階レビュー（仕様→品質）= 高品質、高速なイテレーション
 
-## When to Use
+## 使用タイミング
 
 ```dot
 digraph when_to_use {
-    "Have implementation plan?" [shape=diamond];
-    "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
+    "実装計画がある？" [shape=diamond];
+    "タスクはほとんど独立している？" [shape=diamond];
+    "このセッションにとどまる？" [shape=diamond];
     "subagent-driven-development" [shape=box];
     "executing-plans" [shape=box];
-    "Manual execution or brainstorm first" [shape=box];
+    "手動実行またはブレインストーミング先行" [shape=box];
 
-    "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
-    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
-    "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "実装計画がある？" -> "タスクはほとんど独立している？" [label="はい"];
+    "実装計画がある？" -> "手動実行またはブレインストーミング先行" [label="いいえ"];
+    "タスクはほとんど独立している？" -> "このセッションにとどまる？" [label="はい"];
+    "タスクはほとんど独立している？" -> "手動実行またはブレインストーミング先行" [label="いいえ - 密結合"];
+    "このセッションにとどまる？" -> "subagent-driven-development" [label="はい"];
+    "このセッションにとどまる？" -> "executing-plans" [label="いいえ - 並列セッション"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
-- Same session (no context switch)
-- Fresh subagent per task (no context pollution)
-- Two-stage review after each task: spec compliance first, then code quality
-- Faster iteration (no human-in-loop between tasks)
+**executing-plans（並列セッション）との比較:**
+- 同じセッション（コンテキストの切り替えなし）
+- タスクごとに新鮮なサブエージェント（コンテキストの汚染なし）
+- 各タスク後に2段階レビュー: まず仕様準拠、次にコード品質
+- 高速なイテレーション（タスク間に人間のループなし）
 
-## The Process
+## プロセス
 
 ```dot
 digraph process {
     rankdir=TB;
 
     subgraph cluster_per_task {
-        label="Per Task";
-        "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
-        "Implementer subagent asks questions?" [shape=diamond];
-        "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
-        "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
-        "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
-        "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
-        "Code quality reviewer subagent approves?" [shape=diamond];
-        "Implementer subagent fixes quality issues" [shape=box];
-        "Mark task complete in TodoWrite" [shape=box];
+        label="タスクごと";
+        "実装サブエージェントをディスパッチ（./implementer-prompt.md）" [shape=box];
+        "実装サブエージェントが質問する？" [shape=diamond];
+        "質問に答え、コンテキストを提供する" [shape=box];
+        "実装サブエージェントが実装、テスト、コミット、セルフレビューする" [shape=box];
+        "仕様レビューサブエージェントをディスパッチ（./spec-reviewer-prompt.md）" [shape=box];
+        "仕様レビューサブエージェントがコードと仕様の一致を確認？" [shape=diamond];
+        "実装サブエージェントが仕様のギャップを修正" [shape=box];
+        "コード品質レビューサブエージェントをディスパッチ（./code-quality-reviewer-prompt.md）" [shape=box];
+        "コード品質レビューサブエージェントが承認？" [shape=diamond];
+        "実装サブエージェントが品質の問題を修正" [shape=box];
+        "TodoWriteでタスクを完了とマーク" [shape=box];
     }
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
-    "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "計画を読み、全タスクを完全なテキストで抽出し、コンテキストをメモし、TodoWriteを作成" [shape=box];
+    "残りのタスクがある？" [shape=diamond];
+    "実装全体に対して最終コードレビューサブエージェントをディスパッチ" [shape=box];
+    "superpowers:finishing-a-development-branchを使用" [shape=box style=filled fillcolor=lightgreen];
 
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
-    "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
-    "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
-    "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
-    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
+    "計画を読み、全タスクを完全なテキストで抽出し、コンテキストをメモし、TodoWriteを作成" -> "実装サブエージェントをディスパッチ（./implementer-prompt.md）";
+    "実装サブエージェントをディスパッチ（./implementer-prompt.md）" -> "実装サブエージェントが質問する？";
+    "実装サブエージェントが質問する？" -> "質問に答え、コンテキストを提供する" [label="はい"];
+    "質問に答え、コンテキストを提供する" -> "実装サブエージェントをディスパッチ（./implementer-prompt.md）";
+    "実装サブエージェントが質問する？" -> "実装サブエージェントが実装、テスト、コミット、セルフレビューする" [label="いいえ"];
+    "実装サブエージェントが実装、テスト、コミット、セルフレビューする" -> "仕様レビューサブエージェントをディスパッチ（./spec-reviewer-prompt.md）";
+    "仕様レビューサブエージェントをディスパッチ（./spec-reviewer-prompt.md）" -> "仕様レビューサブエージェントがコードと仕様の一致を確認？";
+    "仕様レビューサブエージェントがコードと仕様の一致を確認？" -> "実装サブエージェントが仕様のギャップを修正" [label="いいえ"];
+    "実装サブエージェントが仕様のギャップを修正" -> "仕様レビューサブエージェントをディスパッチ（./spec-reviewer-prompt.md）" [label="再レビュー"];
+    "仕様レビューサブエージェントがコードと仕様の一致を確認？" -> "コード品質レビューサブエージェントをディスパッチ（./code-quality-reviewer-prompt.md）" [label="はい"];
+    "コード品質レビューサブエージェントをディスパッチ（./code-quality-reviewer-prompt.md）" -> "コード品質レビューサブエージェントが承認？";
+    "コード品質レビューサブエージェントが承認？" -> "実装サブエージェントが品質の問題を修正" [label="いいえ"];
+    "実装サブエージェントが品質の問題を修正" -> "コード品質レビューサブエージェントをディスパッチ（./code-quality-reviewer-prompt.md）" [label="再レビュー"];
+    "コード品質レビューサブエージェントが承認？" -> "TodoWriteでタスクを完了とマーク" [label="はい"];
+    "TodoWriteでタスクを完了とマーク" -> "残りのタスクがある？";
+    "残りのタスクがある？" -> "実装サブエージェントをディスパッチ（./implementer-prompt.md）" [label="はい"];
+    "残りのタスクがある？" -> "実装全体に対して最終コードレビューサブエージェントをディスパッチ" [label="いいえ"];
+    "実装全体に対して最終コードレビューサブエージェントをディスパッチ" -> "superpowers:finishing-a-development-branchを使用";
 }
 ```
 
-## Model Selection
+## モデルの選択
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
+コストを節約し速度を上げるために、各役割に対して必要最小限の強力なモデルを使用します。
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+**機械的な実装タスク**（独立した関数、明確な仕様、1〜2ファイル）: 高速で安価なモデルを使用。計画が適切に仕様化されている場合、ほとんどの実装タスクは機械的です。
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+**統合と判断タスク**（複数ファイルの調整、パターンマッチング、デバッグ）: 標準モデルを使用。
 
-**Architecture, design, and review tasks**: use the most capable available model.
+**アーキテクチャ、設計、レビュータスク**: 最も有能なモデルを使用。
 
-**Task complexity signals:**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+**タスクの複雑さのシグナル:**
+- 完全な仕様で1〜2ファイルを変更 → 安価なモデル
+- 統合の懸念がある複数ファイルを変更 → 標準モデル
+- 設計の判断や広範なコードベースの理解が必要 → 最も有能なモデル
 
-## Handling Implementer Status
+## 実装サブエージェントのステータスの処理
 
-Implementer subagents report one of four statuses. Handle each appropriately:
+実装サブエージェントは4つのステータスのうちの1つを報告します。それぞれ適切に処理してください:
 
-**DONE:** Proceed to spec compliance review.
+**DONE:** 仕様準拠レビューに進む。
 
-**DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them and proceed to review.
+**DONE_WITH_CONCERNS:** 実装サブエージェントが作業を完了したが疑念を表明した。進む前に懸念を読む。懸念が正確さやスコープについてのものであれば、レビュー前に対処する。観察（例：「このファイルは大きくなっています」）であれば、メモして進む。
 
-**NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
+**NEEDS_CONTEXT:** 実装サブエージェントが提供されなかった情報を必要としている。不足しているコンテキストを提供して再ディスパッチする。
 
-**BLOCKED:** The implementer cannot complete the task. Assess the blocker:
-1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
-3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, escalate to the human
+**BLOCKED:** 実装サブエージェントがタスクを完了できない。ブロッカーを評価する:
+1. コンテキストの問題であれば、より多くのコンテキストを提供し、同じモデルで再ディスパッチする
+2. タスクがより多くの推論を必要とする場合、より有能なモデルで再ディスパッチする
+3. タスクが大きすぎる場合、より小さな部分に分割する
+4. 計画自体が間違っている場合、人間にエスカレートする
 
-**Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+**絶対に** エスカレーションを無視したり、変更なしに同じモデルに再試行させたりしないでください。実装サブエージェントが行き詰まっていると言ったなら、何かを変える必要があります。
 
-## Prompt Templates
+## プロンプトテンプレート
 
-- `./implementer-prompt.md` - Dispatch implementer subagent
-- `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
-- `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
+- `./implementer-prompt.md` - 実装サブエージェントをディスパッチ
+- `./spec-reviewer-prompt.md` - 仕様準拠レビューサブエージェントをディスパッチ
+- `./code-quality-reviewer-prompt.md` - コード品質レビューサブエージェントをディスパッチ
 
-## Example Workflow
+## ワークフロー例
 
 ```
-You: I'm using Subagent-Driven Development to execute this plan.
+あなた: サブエージェント駆動開発を使ってこの計画を実行します。
 
-[Read plan file once: docs/superpowers/plans/feature-plan.md]
-[Extract all 5 tasks with full text and context]
-[Create TodoWrite with all tasks]
+[計画ファイルを一度読む: docs/superpowers/plans/feature-plan.md]
+[完全なテキストとコンテキストで全5タスクを抽出]
+[全タスクでTodoWriteを作成]
 
-Task 1: Hook installation script
+タスク1: フックインストールスクリプト
 
-[Get Task 1 text and context (already extracted)]
-[Dispatch implementation subagent with full task text + context]
+[タスク1のテキストとコンテキストを取得（すでに抽出済み）]
+[完全なタスクテキスト + コンテキストで実装サブエージェントをディスパッチ]
 
-Implementer: "Before I begin - should the hook be installed at user or system level?"
+実装: 「始める前に — フックはユーザーレベルとシステムレベルのどちらにインストールすべきですか？」
 
-You: "User level (~/.config/superpowers/hooks/)"
+あなた: 「ユーザーレベル（~/.config/superpowers/hooks/）」
 
-Implementer: "Got it. Implementing now..."
-[Later] Implementer:
-  - Implemented install-hook command
-  - Added tests, 5/5 passing
-  - Self-review: Found I missed --force flag, added it
-  - Committed
+実装: 「了解しました。実装中です...」
+[後で] 実装:
+  - install-hookコマンドを実装
+  - テストを追加、5/5通過
+  - セルフレビュー: --forceフラグを見逃していたので追加しました
+  - コミット済み
 
-[Dispatch spec compliance reviewer]
-Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
+[仕様準拠レビューをディスパッチ]
+仕様レビュー: ✅ 仕様準拠 — 全要件を満たし、余分なものなし
 
-[Get git SHAs, dispatch code quality reviewer]
-Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
+[git SHAを取得し、コード品質レビューをディスパッチ]
+コードレビュー: 長所: 良いテストカバレッジ、クリーン。問題: なし。承認。
 
-[Mark Task 1 complete]
+[タスク1を完了とマーク]
 
-Task 2: Recovery modes
+タスク2: リカバリーモード
 
-[Get Task 2 text and context (already extracted)]
-[Dispatch implementation subagent with full task text + context]
+[タスク2のテキストとコンテキストを取得（すでに抽出済み）]
+[完全なタスクテキスト + コンテキストで実装サブエージェントをディスパッチ]
 
-Implementer: [No questions, proceeds]
-Implementer:
-  - Added verify/repair modes
-  - 8/8 tests passing
-  - Self-review: All good
-  - Committed
+実装: [質問なし、進行]
+実装:
+  - verify/repairモードを追加
+  - 8/8テスト通過
+  - セルフレビュー: 全て良好
+  - コミット済み
 
-[Dispatch spec compliance reviewer]
-Spec reviewer: ❌ Issues:
-  - Missing: Progress reporting (spec says "report every 100 items")
-  - Extra: Added --json flag (not requested)
+[仕様準拠レビューをディスパッチ]
+仕様レビュー: ❌ 問題:
+  - 欠けている: 進捗レポート（仕様に「100項目ごとに報告」と記載）
+  - 余分: --jsonフラグを追加（リクエストされていない）
 
-[Implementer fixes issues]
-Implementer: Removed --json flag, added progress reporting
+[実装が問題を修正]
+実装: --jsonフラグを削除し、進捗レポートを追加
 
-[Spec reviewer reviews again]
-Spec reviewer: ✅ Spec compliant now
+[仕様レビューが再確認]
+仕様レビュー: ✅ 今は仕様準拠
 
-[Dispatch code quality reviewer]
-Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
+[コード品質レビューをディスパッチ]
+コードレビュー: 長所: 堅実。問題（Important）: マジックナンバー（100）
 
-[Implementer fixes]
-Implementer: Extracted PROGRESS_INTERVAL constant
+[実装が修正]
+実装: PROGRESS_INTERVAL定数を抽出
 
-[Code reviewer reviews again]
-Code reviewer: ✅ Approved
+[コードレビューが再確認]
+コードレビュー: ✅ 承認
 
-[Mark Task 2 complete]
+[タスク2を完了とマーク]
 
 ...
 
-[After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[全タスク後]
+[最終コードレビューをディスパッチ]
+最終レビュー: 全要件を満たし、マージの準備ができています
 
-Done!
+完了！
 ```
 
-## Advantages
+## 利点
 
-**vs. Manual execution:**
-- Subagents follow TDD naturally
-- Fresh context per task (no confusion)
-- Parallel-safe (subagents don't interfere)
-- Subagent can ask questions (before AND during work)
+**手動実行との比較:**
+- サブエージェントが自然にTDDに従う
+- タスクごとに新鮮なコンテキスト（混乱なし）
+- 並列安全（サブエージェントが干渉しない）
+- サブエージェントが質問できる（作業前と作業中）
 
-**vs. Executing Plans:**
-- Same session (no handoff)
-- Continuous progress (no waiting)
-- Review checkpoints automatic
+**executing-plansとの比較:**
+- 同じセッション（ハンドオフなし）
+- 継続的な進捗（待機なし）
+- レビューチェックポイントが自動
 
-**Efficiency gains:**
-- No file reading overhead (controller provides full text)
-- Controller curates exactly what context is needed
-- Subagent gets complete information upfront
-- Questions surfaced before work begins (not after)
+**効率の向上:**
+- ファイル読み込みのオーバーヘッドなし（コントローラーが完全なテキストを提供）
+- コントローラーが必要なコンテキストを正確にキュレーション
+- サブエージェントが最初から完全な情報を取得
+- 作業前に質問が表面化（後ではなく）
 
-**Quality gates:**
-- Self-review catches issues before handoff
-- Two-stage review: spec compliance, then code quality
-- Review loops ensure fixes actually work
-- Spec compliance prevents over/under-building
-- Code quality ensures implementation is well-built
+**品質ゲート:**
+- セルフレビューがハンドオフ前に問題をキャッチ
+- 2段階レビュー: 仕様準拠、次にコード品質
+- レビューループが修正が実際に機能することを確認
+- 仕様準拠が過剰/不足な構築を防ぐ
+- コード品質が実装が適切に構築されていることを確認
 
-**Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
-- Controller does more prep work (extracting all tasks upfront)
-- Review loops add iterations
-- But catches issues early (cheaper than debugging later)
+**コスト:**
+- より多くのサブエージェント呼び出し（タスクごとに実装 + 2レビュアー）
+- コントローラーがより多くの準備作業を行う（全タスクを事前に抽出）
+- レビューループがイテレーションを増やす
+- しかし早期に問題をキャッチ（後でデバッグするより安い）
 
-## Red Flags
+## レッドフラグ
 
-**Never:**
-- Start implementation on main/master branch without explicit user consent
-- Skip reviews (spec compliance OR code quality)
-- Proceed with unfixed issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
-- Make subagent read plan file (provide full text instead)
-- Skip scene-setting context (subagent needs to understand where task fits)
-- Ignore subagent questions (answer before letting them proceed)
-- Accept "close enough" on spec compliance (spec reviewer found issues = not done)
-- Skip review loops (reviewer found issues = implementer fixes = review again)
-- Let implementer self-review replace actual review (both are needed)
-- **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
+**絶対にしてはいけないこと:**
+- ユーザーの明示的な同意なしにmain/masterブランチで実装を開始する
+- レビュー（仕様準拠またはコード品質）をスキップする
+- 未修正の問題を抱えたまま進む
+- 複数の実装サブエージェントを並列でディスパッチする（競合する）
+- サブエージェントに計画ファイルを読ませる（代わりに完全なテキストを提供する）
+- シーン設定のコンテキストをスキップする（サブエージェントがタスクの位置を理解する必要がある）
+- サブエージェントの質問を無視する（進める前に答える）
+- 仕様準拠で「まあいいか」を受け入れる（仕様レビュアーが問題を見つけた = 未完了）
+- レビューループをスキップする（レビュアーが問題を見つけた = 実装が修正 = 再レビュー）
+- 実装サブエージェントのセルフレビューが実際のレビューを代替すると考える（両方が必要）
+- **仕様準拠が✅になる前にコード品質レビューを開始する**（順序が間違っている）
+- どちらかのレビューに未解決の問題がある状態で次のタスクに移動する
 
-**If subagent asks questions:**
-- Answer clearly and completely
-- Provide additional context if needed
-- Don't rush them into implementation
+**サブエージェントが質問する場合:**
+- 明確かつ完全に答える
+- 必要に応じて追加のコンテキストを提供する
+- 実装に急かさない
 
-**If reviewer finds issues:**
-- Implementer (same subagent) fixes them
-- Reviewer reviews again
-- Repeat until approved
-- Don't skip the re-review
+**レビュアーが問題を見つける場合:**
+- 実装サブエージェント（同じサブエージェント）が修正する
+- レビュアーが再確認する
+- 承認されるまで繰り返す
+- 再レビューをスキップしない
 
-**If subagent fails task:**
-- Dispatch fix subagent with specific instructions
-- Don't try to fix manually (context pollution)
+**サブエージェントがタスクに失敗した場合:**
+- 特定の指示で修正サブエージェントをディスパッチする
+- 手動で修正しようとしない（コンテキストの汚染）
 
-## Integration
+## 連携
 
-**Required workflow skills:**
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-- **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:requesting-code-review** - Code review template for reviewer subagents
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+**必須ワークフロースキル:**
+- **superpowers:using-git-worktrees** - 必須: 開始前に隔離されたワークスペースをセットアップする
+- **superpowers:writing-plans** - このスキルが実行する計画を作成する
+- **superpowers:requesting-code-review** - レビューサブエージェントのコードレビューテンプレート
+- **superpowers:finishing-a-development-branch** - 全タスク後に開発を完了する
 
-**Subagents should use:**
-- **superpowers:test-driven-development** - Subagents follow TDD for each task
+**サブエージェントが使うべきスキル:**
+- **superpowers:test-driven-development** - サブエージェントが各タスクでTDDに従う
 
-**Alternative workflow:**
-- **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+**代替ワークフロー:**
+- **superpowers:executing-plans** - 同じセッションの実行ではなく並列セッションに使用する

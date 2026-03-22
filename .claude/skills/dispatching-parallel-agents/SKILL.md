@@ -1,182 +1,182 @@
 ---
 name: dispatching-parallel-agents
-description: Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
+description: 共有状態や順次依存関係なしに作業できる独立したタスクが2つ以上ある場合に使用する
 ---
 
-# Dispatching Parallel Agents
+# 並列エージェントのディスパッチ
 
-## Overview
+## 概要
 
-You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+タスクを専門エージェントに隔離されたコンテキストで委任します。指示とコンテキストを正確に作成することで、エージェントが集中して成功できるようにします。エージェントがセッションのコンテキストや履歴を引き継がないようにし、必要なものだけを構築して渡します。これにより、自分自身のコンテキストも調整作業のために保たれます。
 
-When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
+複数の無関係な失敗（異なるテストファイル、異なるサブシステム、異なるバグ）がある場合、順番に調査するのは時間の無駄です。各調査は独立しており、並列で実行できます。
 
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
+**基本原則:** 独立した問題領域ごとに1つのエージェントをディスパッチし、並行して作業させる。
 
-## When to Use
+## 使用タイミング
 
 ```dot
 digraph when_to_use {
-    "Multiple failures?" [shape=diamond];
-    "Are they independent?" [shape=diamond];
-    "Single agent investigates all" [shape=box];
-    "One agent per problem domain" [shape=box];
-    "Can they work in parallel?" [shape=diamond];
-    "Sequential agents" [shape=box];
-    "Parallel dispatch" [shape=box];
+    "複数の失敗がある？" [shape=diamond];
+    "それらは独立している？" [shape=diamond];
+    "1つのエージェントが全て調査" [shape=box];
+    "問題領域ごとに1エージェント" [shape=box];
+    "並列で作業できる？" [shape=diamond];
+    "順次エージェント" [shape=box];
+    "並列ディスパッチ" [shape=box];
 
-    "Multiple failures?" -> "Are they independent?" [label="yes"];
-    "Are they independent?" -> "Single agent investigates all" [label="no - related"];
-    "Are they independent?" -> "Can they work in parallel?" [label="yes"];
-    "Can they work in parallel?" -> "Parallel dispatch" [label="yes"];
-    "Can they work in parallel?" -> "Sequential agents" [label="no - shared state"];
+    "複数の失敗がある？" -> "それらは独立している？" [label="はい"];
+    "それらは独立している？" -> "1つのエージェントが全て調査" [label="いいえ - 関連あり"];
+    "それらは独立している？" -> "並列で作業できる？" [label="はい"];
+    "並列で作業できる？" -> "並列ディスパッチ" [label="はい"];
+    "並列で作業できる？" -> "順次エージェント" [label="いいえ - 共有状態"];
 }
 ```
 
-**Use when:**
-- 3+ test files failing with different root causes
-- Multiple subsystems broken independently
-- Each problem can be understood without context from others
-- No shared state between investigations
+**使用する場面:**
+- 異なる根本原因で3つ以上のテストファイルが失敗している
+- 複数のサブシステムが独立して壊れている
+- 各問題が他のコンテキストなしに理解できる
+- 調査間に共有状態がない
 
-**Don't use when:**
-- Failures are related (fix one might fix others)
-- Need to understand full system state
-- Agents would interfere with each other
+**使用しない場面:**
+- 失敗が関連している（1つ修正すると他も修正されるかもしれない）
+- システム全体の状態を把握する必要がある
+- エージェントが互いに干渉する可能性がある
 
-## The Pattern
+## パターン
 
-### 1. Identify Independent Domains
+### 1. 独立したドメインを特定する
 
-Group failures by what's broken:
-- File A tests: Tool approval flow
-- File B tests: Batch completion behavior
-- File C tests: Abort functionality
+失敗を壊れているものでグループ分けする:
+- ファイルAのテスト: ツール承認フロー
+- ファイルBのテスト: バッチ完了動作
+- ファイルCのテスト: 中断機能
 
-Each domain is independent - fixing tool approval doesn't affect abort tests.
+各ドメインは独立しています — ツール承認の修正は中断テストに影響しません。
 
-### 2. Create Focused Agent Tasks
+### 2. 集中したエージェントタスクを作成する
 
-Each agent gets:
-- **Specific scope:** One test file or subsystem
-- **Clear goal:** Make these tests pass
-- **Constraints:** Don't change other code
-- **Expected output:** Summary of what you found and fixed
+各エージェントが受け取るもの:
+- **特定のスコープ:** 1つのテストファイルまたはサブシステム
+- **明確な目標:** これらのテストを通過させる
+- **制約:** 他のコードを変更しない
+- **期待される出力:** 発見したこととその修正のサマリ
 
-### 3. Dispatch in Parallel
+### 3. 並列でディスパッチする
 
 ```typescript
-// In Claude Code / AI environment
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently
+// Claude Code / AI環境で
+Task("agent-tool-abort.test.tsの失敗を修正")
+Task("batch-completion-behavior.test.tsの失敗を修正")
+Task("tool-approval-race-conditions.test.tsの失敗を修正")
+// 3つ同時に実行
 ```
 
-### 4. Review and Integrate
+### 4. レビューして統合する
 
-When agents return:
-- Read each summary
-- Verify fixes don't conflict
-- Run full test suite
-- Integrate all changes
+エージェントが戻ってきたら:
+- 各サマリを読む
+- 修正が競合しないことを確認する
+- 完全なテストスイートを実行する
+- 全ての変更を統合する
 
-## Agent Prompt Structure
+## エージェントプロンプトの構造
 
-Good agent prompts are:
-1. **Focused** - One clear problem domain
-2. **Self-contained** - All context needed to understand the problem
-3. **Specific about output** - What should the agent return?
+良いエージェントプロンプトは:
+1. **集中している** - 1つの明確な問題領域
+2. **自己完結している** - 問題を理解するために必要な全てのコンテキスト
+3. **出力について具体的** - エージェントは何を返すべきか？
 
 ```markdown
-Fix the 3 failing tests in src/agents/agent-tool-abort.test.ts:
+src/agents/agent-tool-abort.test.tsの3つの失敗テストを修正してください:
 
-1. "should abort tool with partial output capture" - expects 'interrupted at' in message
-2. "should handle mixed completed and aborted tools" - fast tool aborted instead of completed
-3. "should properly track pendingToolCount" - expects 3 results but gets 0
+1. "should abort tool with partial output capture" - メッセージに 'interrupted at' が期待される
+2. "should handle mixed completed and aborted tools" - 速いツールが完了ではなく中断される
+3. "should properly track pendingToolCount" - 3つの結果が期待されるが0になる
 
-These are timing/race condition issues. Your task:
+これらはタイミング/競合状態の問題です。あなたのタスク:
 
-1. Read the test file and understand what each test verifies
-2. Identify root cause - timing issues or actual bugs?
-3. Fix by:
-   - Replacing arbitrary timeouts with event-based waiting
-   - Fixing bugs in abort implementation if found
-   - Adjusting test expectations if testing changed behavior
+1. テストファイルを読んで各テストが何を検証するかを理解する
+2. 根本原因を特定する — タイミングの問題か実際のバグか？
+3. 以下の方法で修正する:
+   - 任意のタイムアウトをイベントベースの待機に置き換える
+   - 見つかった場合は中断実装のバグを修正する
+   - 変更した動作をテストしている場合はテストの期待値を調整する
 
-Do NOT just increase timeouts - find the real issue.
+タイムアウトを増やすだけにしないこと — 本当の問題を見つけてください。
 
-Return: Summary of what you found and what you fixed.
+戻り値: 発見したことと修正したことのサマリ。
 ```
 
-## Common Mistakes
+## よくある間違い
 
-**❌ Too broad:** "Fix all the tests" - agent gets lost
-**✅ Specific:** "Fix agent-tool-abort.test.ts" - focused scope
+**❌ 広すぎる:** 「全てのテストを修正して」 — エージェントが迷子になる
+**✅ 具体的:** 「agent-tool-abort.test.tsを修正して」 — 集中したスコープ
 
-**❌ No context:** "Fix the race condition" - agent doesn't know where
-**✅ Context:** Paste the error messages and test names
+**❌ コンテキストなし:** 「競合状態を修正して」 — エージェントがどこか分からない
+**✅ コンテキストあり:** エラーメッセージとテスト名を貼り付ける
 
-**❌ No constraints:** Agent might refactor everything
-**✅ Constraints:** "Do NOT change production code" or "Fix tests only"
+**❌ 制約なし:** エージェントが全てをリファクタリングするかもしれない
+**✅ 制約あり:** 「本番コードを変更しないこと」または「テストのみ修正する」
 
-**❌ Vague output:** "Fix it" - you don't know what changed
-**✅ Specific:** "Return summary of root cause and changes"
+**❌ 曖昧な出力:** 「修正して」 — 何が変わったか分からない
+**✅ 具体的:** 「根本原因と変更のサマリを返す」
 
-## When NOT to Use
+## 使用しない場面
 
-**Related failures:** Fixing one might fix others - investigate together first
-**Need full context:** Understanding requires seeing entire system
-**Exploratory debugging:** You don't know what's broken yet
-**Shared state:** Agents would interfere (editing same files, using same resources)
+**関連する失敗:** 1つを修正すると他も修正されるかもしれない — まとめて調査する
+**完全なコンテキストが必要:** 理解にシステム全体が必要
+**探索的デバッグ:** 何が壊れているかまだ分からない
+**共有状態:** エージェントが干渉する（同じファイルを編集する、同じリソースを使用する）
 
-## Real Example from Session
+## セッションからの実例
 
-**Scenario:** 6 test failures across 3 files after major refactoring
+**シナリオ:** 大規模リファクタリング後、3つのファイルにまたがる6つのテスト失敗
 
-**Failures:**
-- agent-tool-abort.test.ts: 3 failures (timing issues)
-- batch-completion-behavior.test.ts: 2 failures (tools not executing)
-- tool-approval-race-conditions.test.ts: 1 failure (execution count = 0)
+**失敗:**
+- agent-tool-abort.test.ts: 3失敗（タイミングの問題）
+- batch-completion-behavior.test.ts: 2失敗（ツールが実行されない）
+- tool-approval-race-conditions.test.ts: 1失敗（実行回数 = 0）
 
-**Decision:** Independent domains - abort logic separate from batch completion separate from race conditions
+**判断:** 独立したドメイン — 中断ロジックはバッチ完了とは別、競合状態とも別
 
-**Dispatch:**
+**ディスパッチ:**
 ```
-Agent 1 → Fix agent-tool-abort.test.ts
-Agent 2 → Fix batch-completion-behavior.test.ts
-Agent 3 → Fix tool-approval-race-conditions.test.ts
+エージェント1 → agent-tool-abort.test.tsを修正
+エージェント2 → batch-completion-behavior.test.tsを修正
+エージェント3 → tool-approval-race-conditions.test.tsを修正
 ```
 
-**Results:**
-- Agent 1: Replaced timeouts with event-based waiting
-- Agent 2: Fixed event structure bug (threadId in wrong place)
-- Agent 3: Added wait for async tool execution to complete
+**結果:**
+- エージェント1: タイムアウトをイベントベースの待機に置き換え
+- エージェント2: イベント構造のバグを修正（threadIdが間違った場所にあった）
+- エージェント3: 非同期ツール実行の完了を待つ処理を追加
 
-**Integration:** All fixes independent, no conflicts, full suite green
+**統合:** 全ての修正が独立しており、競合なし、スイート全体がグリーン
 
-**Time saved:** 3 problems solved in parallel vs sequentially
+**節約された時間:** 3つの問題が順次ではなく並列で解決
 
-## Key Benefits
+## 主な利点
 
-1. **Parallelization** - Multiple investigations happen simultaneously
-2. **Focus** - Each agent has narrow scope, less context to track
-3. **Independence** - Agents don't interfere with each other
-4. **Speed** - 3 problems solved in time of 1
+1. **並列化** — 複数の調査が同時に行われる
+2. **集中** — 各エージェントが狭いスコープを持ち、追跡するコンテキストが少ない
+3. **独立性** — エージェントが互いに干渉しない
+4. **速度** — 1つの時間で3つの問題が解決される
 
-## Verification
+## 検証
 
-After agents return:
-1. **Review each summary** - Understand what changed
-2. **Check for conflicts** - Did agents edit same code?
-3. **Run full suite** - Verify all fixes work together
-4. **Spot check** - Agents can make systematic errors
+エージェントが戻ってきたら:
+1. **各サマリをレビュー** — 何が変わったかを理解する
+2. **競合をチェック** — エージェントが同じコードを編集したか？
+3. **完全なスイートを実行** — 全ての修正が一緒に機能することを確認する
+4. **スポットチェック** — エージェントは体系的なエラーを起こすことがある
 
-## Real-World Impact
+## 実際の影響
 
-From debugging session (2025-10-03):
-- 6 failures across 3 files
-- 3 agents dispatched in parallel
-- All investigations completed concurrently
-- All fixes integrated successfully
-- Zero conflicts between agent changes
+デバッグセッション（2025-10-03）から:
+- 3つのファイルにまたがる6つの失敗
+- 3つのエージェントを並列でディスパッチ
+- 全ての調査が並行して完了
+- 全ての修正が正常に統合
+- エージェントの変更間の競合ゼロ

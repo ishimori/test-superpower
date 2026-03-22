@@ -1,61 +1,61 @@
-# Spec Compliance Reviewer Prompt Template
+# 仕様準拠レビューサブエージェントプロンプトテンプレート
 
-Use this template when dispatching a spec compliance reviewer subagent.
+仕様準拠レビューサブエージェントをディスパッチする際にこのテンプレートを使用します。
 
-**Purpose:** Verify implementer built what was requested (nothing more, nothing less)
+**目的:** 実装サブエージェントがリクエストされたものを構築したことを確認する（過不足なく）
 
 ```
-Task tool (general-purpose):
-  description: "Review spec compliance for Task N"
+Taskツール（general-purpose）:
+  description: "タスクNの仕様準拠をレビュー"
   prompt: |
-    You are reviewing whether an implementation matches its specification.
+    あなたは実装が仕様と一致するかどうかをレビューしています。
 
-    ## What Was Requested
+    ## リクエストされた内容
 
-    [FULL TEXT of task requirements]
+    [タスク要件の完全なテキスト]
 
-    ## What Implementer Claims They Built
+    ## 実装サブエージェントが構築したと主張する内容
 
-    [From implementer's report]
+    [実装サブエージェントの報告から]
 
-    ## CRITICAL: Do Not Trust the Report
+    ## 重要: 報告を信頼しないこと
 
-    The implementer finished suspiciously quickly. Their report may be incomplete,
-    inaccurate, or optimistic. You MUST verify everything independently.
+    実装サブエージェントは不審なほど早く終了しました。彼らの報告は不完全、
+    不正確、または楽観的かもしれません。全てを独立して検証しなければなりません。
 
-    **DO NOT:**
-    - Take their word for what they implemented
-    - Trust their claims about completeness
-    - Accept their interpretation of requirements
+    **してはいけないこと:**
+    - 実装したと言うことをそのまま受け取る
+    - 完全性の主張を信頼する
+    - 要件の解釈を受け入れる
 
-    **DO:**
-    - Read the actual code they wrote
-    - Compare actual implementation to requirements line by line
-    - Check for missing pieces they claimed to implement
-    - Look for extra features they didn't mention
+    **すること:**
+    - 実際に書いたコードを読む
+    - 実際の実装を要件と1行ずつ比較する
+    - 実装したと主張した欠けている部分を確認する
+    - 言及していない余分な機能を探す
 
-    ## Your Job
+    ## あなたの仕事
 
-    Read the implementation code and verify:
+    実装コードを読んで確認する:
 
-    **Missing requirements:**
-    - Did they implement everything that was requested?
-    - Are there requirements they skipped or missed?
-    - Did they claim something works but didn't actually implement it?
+    **欠けている要件:**
+    - リクエストされた全てを実装したか？
+    - スキップまたは見逃した要件がないか？
+    - 何かが動作すると主張したが実際に実装していないものがないか？
 
-    **Extra/unneeded work:**
-    - Did they build things that weren't requested?
-    - Did they over-engineer or add unnecessary features?
-    - Did they add "nice to haves" that weren't in spec?
+    **余分/不要な作業:**
+    - リクエストされていないものを構築したか？
+    - 過剰設計または不必要な機能を追加したか？
+    - 仕様にない「あるといい」機能を追加したか？
 
-    **Misunderstandings:**
-    - Did they interpret requirements differently than intended?
-    - Did they solve the wrong problem?
-    - Did they implement the right feature but wrong way?
+    **誤解:**
+    - 意図とは異なる方法で要件を解釈したか？
+    - 間違った問題を解決したか？
+    - 正しい機能を間違った方法で実装したか？
 
-    **Verify by reading code, not by trusting report.**
+    **報告を信頼するのではなく、コードを読んで検証すること。**
 
-    Report:
-    - ✅ Spec compliant (if everything matches after code inspection)
-    - ❌ Issues found: [list specifically what's missing or extra, with file:line references]
+    報告:
+    - ✅ 仕様準拠（コード検査後に全てが一致する場合）
+    - ❌ 問題が見つかった: [欠けているものや余分なものを具体的にリストアップ、ファイル:行番号の参照付き]
 ```

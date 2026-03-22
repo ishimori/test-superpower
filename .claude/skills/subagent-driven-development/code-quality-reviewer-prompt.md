@@ -1,26 +1,26 @@
-# Code Quality Reviewer Prompt Template
+# コード品質レビューサブエージェントプロンプトテンプレート
 
-Use this template when dispatching a code quality reviewer subagent.
+コード品質レビューサブエージェントをディスパッチする際にこのテンプレートを使用します。
 
-**Purpose:** Verify implementation is well-built (clean, tested, maintainable)
+**目的:** 実装が適切に構築されているかを検証する（クリーン、テスト済み、保守可能）
 
-**Only dispatch after spec compliance review passes.**
+**仕様準拠レビューが通過した後にのみディスパッチすること。**
 
 ```
-Task tool (superpowers:code-reviewer):
-  Use template at requesting-code-review/code-reviewer.md
+Taskツール（superpowers:code-reviewer）:
+  requesting-code-review/code-reviewer.mdのテンプレートを使用
 
-  WHAT_WAS_IMPLEMENTED: [from implementer's report]
-  PLAN_OR_REQUIREMENTS: Task N from [plan-file]
-  BASE_SHA: [commit before task]
-  HEAD_SHA: [current commit]
-  DESCRIPTION: [task summary]
+  WHAT_WAS_IMPLEMENTED: [実装サブエージェントの報告から]
+  PLAN_OR_REQUIREMENTS: [計画ファイル]のタスクN
+  BASE_SHA: [タスク前のコミット]
+  HEAD_SHA: [現在のコミット]
+  DESCRIPTION: [タスクのサマリ]
 ```
 
-**In addition to standard code quality concerns, the reviewer should check:**
-- Does each file have one clear responsibility with a well-defined interface?
-- Are units decomposed so they can be understood and tested independently?
-- Is the implementation following the file structure from the plan?
-- Did this implementation create new files that are already large, or significantly grow existing files? (Don't flag pre-existing file sizes — focus on what this change contributed.)
+**標準的なコード品質の懸念に加えて、レビュアーは以下を確認すべき:**
+- 各ファイルは明確に定義されたインターフェースを持つ1つの明確な責務を持っているか？
+- ユニットが独立して理解・テストできるように分解されているか？
+- 実装は計画のファイル構造に従っているか？
+- この実装は既に大きい新しいファイルを作成したか、または既存ファイルを大幅に増やしたか？（既存のファイルサイズは指摘しない — この変更が貢献したものに集中する）
 
-**Code reviewer returns:** Strengths, Issues (Critical/Important/Minor), Assessment
+**コードレビュアーの返答:** 長所、問題（Critical/Important/Minor）、評価

@@ -1,63 +1,63 @@
-# Condition-Based Waiting
+# 条件ベースの待機
 
-## Overview
+## 概要
 
-Flaky tests often guess at timing with arbitrary delays. This creates race conditions where tests pass on fast machines but fail under load or in CI.
+不安定なテストはしばしば任意の遅延でタイミングを推測します。これにより、速いマシンでは通過するがロード下またはCIで失敗する競合状態が生まれます。
 
-**Core principle:** Wait for the actual condition you care about, not a guess about how long it takes.
+**基本原則:** かかる時間についての推測ではなく、実際に必要とする条件を待つ。
 
-## When to Use
+## 使用タイミング
 
 ```dot
 digraph when_to_use {
-    "Test uses setTimeout/sleep?" [shape=diamond];
-    "Testing timing behavior?" [shape=diamond];
-    "Document WHY timeout needed" [shape=box];
-    "Use condition-based waiting" [shape=box];
+    "テストがsetTimeout/sleepを使っている？" [shape=diamond];
+    "タイミングの動作をテストしている？" [shape=diamond];
+    "タイムアウトが必要な理由を文書化する" [shape=box];
+    "条件ベースの待機を使用する" [shape=box];
 
-    "Test uses setTimeout/sleep?" -> "Testing timing behavior?" [label="yes"];
-    "Testing timing behavior?" -> "Document WHY timeout needed" [label="yes"];
-    "Testing timing behavior?" -> "Use condition-based waiting" [label="no"];
+    "テストがsetTimeout/sleepを使っている？" -> "タイミングの動作をテストしている？" [label="はい"];
+    "タイミングの動作をテストしている？" -> "タイムアウトが必要な理由を文書化する" [label="はい"];
+    "タイミングの動作をテストしている？" -> "条件ベースの待機を使用する" [label="いいえ"];
 }
 ```
 
-**Use when:**
-- Tests have arbitrary delays (`setTimeout`, `sleep`, `time.sleep()`)
-- Tests are flaky (pass sometimes, fail under load)
-- Tests timeout when run in parallel
-- Waiting for async operations to complete
+**使用する場面:**
+- テストに任意の遅延がある（`setTimeout`、`sleep`、`time.sleep()`）
+- テストが不安定（時々通過し、ロード下で失敗する）
+- 並列実行時にテストがタイムアウトする
+- 非同期操作の完了を待つ
 
-**Don't use when:**
-- Testing actual timing behavior (debounce, throttle intervals)
-- Always document WHY if using arbitrary timeout
+**使用しない場面:**
+- 実際のタイミング動作をテストする（デバウンス、スロットル間隔）
+- 任意のタイムアウトを使用する場合は常にその理由を文書化する
 
-## Core Pattern
+## 基本パターン
 
 ```typescript
-// ❌ BEFORE: Guessing at timing
+// ❌ 前: タイミングを推測
 await new Promise(r => setTimeout(r, 50));
 const result = getResult();
 expect(result).toBeDefined();
 
-// ✅ AFTER: Waiting for condition
+// ✅ 後: 条件を待つ
 await waitFor(() => getResult() !== undefined);
 const result = getResult();
 expect(result).toBeDefined();
 ```
 
-## Quick Patterns
+## クイックパターン
 
-| Scenario | Pattern |
-|----------|---------|
-| Wait for event | `waitFor(() => events.find(e => e.type === 'DONE'))` |
-| Wait for state | `waitFor(() => machine.state === 'ready')` |
-| Wait for count | `waitFor(() => items.length >= 5)` |
-| Wait for file | `waitFor(() => fs.existsSync(path))` |
-| Complex condition | `waitFor(() => obj.ready && obj.value > 10)` |
+| シナリオ | パターン |
+|---------|---------|
+| イベントを待つ | `waitFor(() => events.find(e => e.type === 'DONE'))` |
+| 状態を待つ | `waitFor(() => machine.state === 'ready')` |
+| カウントを待つ | `waitFor(() => items.length >= 5)` |
+| ファイルを待つ | `waitFor(() => fs.existsSync(path))` |
+| 複雑な条件 | `waitFor(() => obj.ready && obj.value > 10)` |
 
-## Implementation
+## 実装
 
-Generic polling function:
+汎用ポーリング関数:
 ```typescript
 async function waitFor<T>(
   condition: () => T | undefined | null | false,
@@ -71,45 +71,45 @@ async function waitFor<T>(
     if (result) return result;
 
     if (Date.now() - startTime > timeoutMs) {
-      throw new Error(`Timeout waiting for ${description} after ${timeoutMs}ms`);
+      throw new Error(`${description}を${timeoutMs}ms後にタイムアウト`);
     }
 
-    await new Promise(r => setTimeout(r, 10)); // Poll every 10ms
+    await new Promise(r => setTimeout(r, 10)); // 10msごとにポーリング
   }
 }
 ```
 
-See `condition-based-waiting-example.ts` in this directory for complete implementation with domain-specific helpers (`waitForEvent`, `waitForEventCount`, `waitForEventMatch`) from actual debugging session.
+完全な実装（`waitForEvent`、`waitForEventCount`、`waitForEventMatch`などのドメイン固有のヘルパーを含む実際のデバッグセッションから）については、このディレクトリの `condition-based-waiting-example.ts` を参照してください。
 
-## Common Mistakes
+## よくある間違い
 
-**❌ Polling too fast:** `setTimeout(check, 1)` - wastes CPU
-**✅ Fix:** Poll every 10ms
+**❌ ポーリングが速すぎる:** `setTimeout(check, 1)` - CPUを無駄にする
+**✅ 修正:** 10msごとにポーリングする
 
-**❌ No timeout:** Loop forever if condition never met
-**✅ Fix:** Always include timeout with clear error
+**❌ タイムアウトなし:** 条件が満たされない場合に無限ループ
+**✅ 修正:** 明確なエラーを含むタイムアウトを常に含める
 
-**❌ Stale data:** Cache state before loop
-**✅ Fix:** Call getter inside loop for fresh data
+**❌ 古いデータ:** ループ前に状態をキャッシュする
+**✅ 修正:** 新鮮なデータのためにループ内でゲッターを呼び出す
 
-## When Arbitrary Timeout IS Correct
+## 任意のタイムアウトが正しい場合
 
 ```typescript
-// Tool ticks every 100ms - need 2 ticks to verify partial output
-await waitForEvent(manager, 'TOOL_STARTED'); // First: wait for condition
-await new Promise(r => setTimeout(r, 200));   // Then: wait for timed behavior
-// 200ms = 2 ticks at 100ms intervals - documented and justified
+// ツールは100msごとにティックする — 部分出力を確認するには2ティック必要
+await waitForEvent(manager, 'TOOL_STARTED'); // まず: 条件を待つ
+await new Promise(r => setTimeout(r, 200));   // 次に: タイミングの動作を待つ
+// 200ms = 100ms間隔で2ティック — 文書化されて正当化されている
 ```
 
-**Requirements:**
-1. First wait for triggering condition
-2. Based on known timing (not guessing)
-3. Comment explaining WHY
+**要件:**
+1. まずトリガー条件を待つ
+2. 既知のタイミングに基づく（推測ではない）
+3. なぜかを説明するコメント
 
-## Real-World Impact
+## 実際の影響
 
-From debugging session (2025-10-03):
-- Fixed 15 flaky tests across 3 files
-- Pass rate: 60% → 100%
-- Execution time: 40% faster
-- No more race conditions
+デバッグセッション（2025-10-03）から:
+- 3つのファイルにまたがる15の不安定なテストを修正
+- 通過率: 60% → 100%
+- 実行時間: 40%高速化
+- 競合状態がなくなった
