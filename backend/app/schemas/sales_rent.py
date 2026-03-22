@@ -5,7 +5,7 @@ import datetime
 class SalesRentRow(BaseModel):
     id: int
     display_order: int
-    applied_at: datetime.date
+    applied_at: datetime.date | None
     employee_id: int | None
     customer_name: str
     property_name: str

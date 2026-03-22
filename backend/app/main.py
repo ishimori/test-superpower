@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import master
+from app.api import sales_rent
 
 app = FastAPI(title="Housing E-Kintai API")
 
@@ -14,6 +15,7 @@ app.add_middleware(
 )
 
 app.include_router(master.router)
+app.include_router(sales_rent.router)
 
 @app.get("/health")
 def health():
