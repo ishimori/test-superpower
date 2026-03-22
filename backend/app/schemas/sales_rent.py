@@ -5,7 +5,7 @@ import datetime
 class SalesRentRow(BaseModel):
     id: int
     display_order: int
-    applied_at: datetime.date | None
+    applied_at: datetime.date
     employee_id: int | None
     customer_name: str
     property_name: str
@@ -25,6 +25,8 @@ class SalesRentRow(BaseModel):
     closing_month: str
     category: str
     is_closed: bool
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
     model_config = {"from_attributes": True}
 
 
