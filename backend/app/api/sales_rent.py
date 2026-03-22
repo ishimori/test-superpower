@@ -64,7 +64,7 @@ def closing_process(payload: ClosingRequest, db: Session = Depends(get_db)):
 @router.get("/export/excel")
 def export_excel(store_id: int, closing_month: str, employee_id: int | None = None, category: str | None = None, db: Session = Depends(get_db)):
     q = db.query(SalesRent).filter(SalesRent.store_id == store_id, SalesRent.closing_month == closing_month)
-    if employee_id:
+    if employee_id is not None:
         q = q.filter(SalesRent.employee_id == employee_id)
     if category:
         q = q.filter(SalesRent.category == category)
