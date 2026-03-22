@@ -1,25 +1,25 @@
-# Codex Tool Mapping
+# Codexツールマッピング
 
-Skills use Claude Code tool names. When you encounter these in a skill, use your platform equivalent:
+スキルはClaude Codeのツール名を使用します。スキル内でこれらに遭遇した場合は、プラットフォームの同等のものを使用してください：
 
-| Skill references | Codex equivalent |
+| スキルの参照 | Codexの同等 |
 |-----------------|------------------|
-| `Task` tool (dispatch subagent) | `spawn_agent` |
-| Multiple `Task` calls (parallel) | Multiple `spawn_agent` calls |
-| Task returns result | `wait` |
-| Task completes automatically | `close_agent` to free slot |
-| `TodoWrite` (task tracking) | `update_plan` |
-| `Skill` tool (invoke a skill) | Skills load natively — just follow the instructions |
-| `Read`, `Write`, `Edit` (files) | Use your native file tools |
-| `Bash` (run commands) | Use your native shell tools |
+| `Task`ツール（サブエージェントのディスパッチ） | `spawn_agent` |
+| 複数の`Task`呼び出し（並列） | 複数の`spawn_agent`呼び出し |
+| Taskが結果を返す | `wait` |
+| Taskが自動的に完了 | スロットを解放するために`close_agent` |
+| `TodoWrite`（タスク追跡） | `update_plan` |
+| `Skill`ツール（スキルを呼び出す） | スキルはネイティブにロードされます — 指示に従うだけ |
+| `Read`、`Write`、`Edit`（ファイル） | ネイティブのファイルツールを使用 |
+| `Bash`（コマンド実行） | ネイティブのシェルツールを使用 |
 
-## Subagent dispatch requires multi-agent support
+## サブエージェントのディスパッチにはマルチエージェントサポートが必要
 
-Add to your Codex config (`~/.codex/config.toml`):
+Codexの設定（`~/.codex/config.toml`）に追加：
 
 ```toml
 [features]
 multi_agent = true
 ```
 
-This enables `spawn_agent`, `wait`, and `close_agent` for skills like `dispatching-parallel-agents` and `subagent-driven-development`.
+これにより`dispatching-parallel-agents`や`subagent-driven-development`などのスキル用に`spawn_agent`、`wait`、`close_agent`が有効になります。

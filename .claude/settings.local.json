@@ -14,7 +14,9 @@
       "Edit(/.claude/skills/writing-plans/**)",
       "Edit(/.claude/skills/executing-plans/**)",
       "Edit(/.claude/skills/writing-skills/**)",
-      "Bash(git -C c:/repo/test-superpower diff --stat HEAD)"
+      "Bash(git -C c:/repo/test-superpower diff --stat HEAD)",
+      "Edit(/.claude/skills/using-superpowers/**)",
+      "Edit(/.claude/skills/using-git-worktrees/**)"
     ]
   }
 }
