@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 interface HasId { id: number; }
 
 export function useTableEditing<T extends HasId>() {
   const [edits, setEdits] = useState<Map<number, Partial<T>>>(new Map());
-  const dirtyIds = new Set(edits.keys());
+  const dirtyIds = useMemo(() => new Set(edits.keys()), [edits]);
 
   const updateCell = useCallback((id: number, field: keyof T, value: unknown) => {
     setEdits((prev) => {
