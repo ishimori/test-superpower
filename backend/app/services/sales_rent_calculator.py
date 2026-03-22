@@ -2,7 +2,7 @@ def calculate_fields(
     brokerage_fee: int,
     ad_fee: int,
     payment_fee: int,
-) -> dict:
+) -> dict[str, int]:
     """
     計算フィールドを計算して返す。
     fee_calculation, ad_calculation, total_summary の式は
