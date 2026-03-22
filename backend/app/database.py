@@ -1,11 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import os
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql://kintai:kintai@localhost:5432/kintai_dev"
+    database_url: str
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
